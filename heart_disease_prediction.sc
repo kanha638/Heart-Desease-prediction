@@ -33,17 +33,31 @@ data.printSchema()
 val logregdataall = data.select(data("TenYearCHD").as("label") ,$"male", $"age", $"currentSmoker",$"cigsPerDay", $"BPMeds", $"prevalentStroke", $"prevalentHyp", $"diabetes", $"totChol", $"sysBP", $"diaBP", $"BMI", $"heartRate", $"glucose")
 val logregdata = logregdataall.na.drop()
 
+/*
+    Random Splitting of data
+        70% of data is being used for training
+        30% of data is being used for testing the model
+*/
 val Array(training,test) = logregdata.randomSplit(Array(0.7,0.3),seed=123)
 
+// Decalaring the assempler for the model
 val assembler = new VectorAssembler().setInputCols(Array("male", "age", "currentSmoker","cigsPerDay", "BPMeds", "prevalentStroke", "prevalentHyp", "diabetes", "totChol", "sysBP", "diaBP", "BMI", "heartRate", "glucose")).setOutputCol("features")
 
-val lr = new LogisticRegression()
+
+// Declared Logistic Regression Model 
+val lr = new LogisticRegression() 
 
 val pipeline = new Pipeline().setStages(Array(assembler,lr))
 
 val model = pipeline.fit(training)
-println("Saving the model : ")
-model.save("./model")
+/* For saving the model we can remove comment from below 2 lines then it would store model in model directory 
+(Note : We have to first make sure to not have any ./model directory before running this file otherwise this will give an error)
+*/
+
+
+// println("Saving the model : ")
+// model.save("./model")
+
 val results = model.transform(test)
 
 val predictionAndLabels = results.select($"prediction",$"label").as[(Double,Double)].rdd
